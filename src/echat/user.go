@@ -309,9 +309,8 @@ func (user *User) JoinHandler(args []string) {
 }
 
 func (user *User) LusersHandler(args []string) {
-	user.FireNumeric(RPL_LUSERCLIENT, len(userlist), 0, 1) //0 services and 1 servers for now
+	user.FireNumeric(RPL_LUSERCLIENT, len(userlist), 1, 1)
 	user.FireNumeric(RPL_LUSEROP, opercount)
-	user.FireNumeric(RPL_LUSERUNKNOWN, 0) //also 0...
 	user.FireNumeric(RPL_LUSERCHANNELS, len(chanlist))
 	user.FireNumeric(RPL_LUSERME, len(userlist), 1)
 }
