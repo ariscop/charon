@@ -219,6 +219,8 @@ func (user *User) UserHandler(args []string) {
 	if !user.registered && user.nickset {
 		user.UserRegistrationFinished()
 	}
+
+	time.Sleep(1 * time.Second)
 }
 
 func (user *User) UserRegistrationFinished() {
@@ -229,6 +231,20 @@ func (user *User) UserRegistrationFinished() {
 	user.FireNumeric(RPL_CREATED, epoch)
 	//TODO fire RPL_MYINFO when we actually have enough stuff to do it
 	user.FireNumeric(RPL_ISUPPORT, isupport)
+
+	// Show user their hidden host if applicable
+	if user.host != user.realhost {
+		user.FireNumeric(RPL_HOSTHIDDEN, user.host)
+	}
+
+	if config.Debug {
+		user.SendLinef(":%s NOTICE %s :This server is in debug mode. Someone is attached to the console reading debug output. Tread with care.", config.ServerName, user.nick)
+	}
+
+	if !config.Privacy {
+		user.SendLinef(":%s NOTICE %s :This server has privacy protections disabled.", config.ServerName, user.nick)
+	}
+
 	user.LusersHandler([]string{})
 	for _, k := range config.AutoJoin {
 		user.JoinHandler([]string{"JOIN", k})

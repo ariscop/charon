@@ -44,7 +44,8 @@ func SetupNumerics() {
 	NUM[ERR_NEEDMOREPARAMS] = "%s :Not enough parameters"
 	NUM[ERR_ALREADYREGISTRED] = "You may not reregister"
 	NUM[ERR_CHANOPRIVSNEEDED] = "%s :You do not have the required status to perform this action"
-	NUM[RPL_YOUREOPER] = ":You are now an IRC operator"
+	NUM[RPL_YOUREOPER] = ":O-Line Gangnam Style"
+	NUM[RPL_HOSTHIDDEN] = "%s :is now your hidden host"
 	NUM[RPL_REHASHING] = "%s :Rehashing"
 	NUM[RPL_WHOISCHANNELS] = "%s :%s"
 	NUM[RPL_WHOISSERVER] = "%s %s :%s"
@@ -83,6 +84,7 @@ const (
 	RPL_MOTD              = 372
 	RPL_MOTDSTART         = 375
 	RPL_ENDOFMOTD         = 376
+	RPL_HOSTHIDDEN        = 396
 	ERR_NOSUCHCHANNEL     = 403
 	ERR_CANNOTSENDTOCHAN  = 404
 	ERR_UNKNOWNCOMMAND    = 421
