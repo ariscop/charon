@@ -29,7 +29,6 @@ type configuration struct {
 	LogChannels        []string
 	Opers              map[string]string
 	Privacy            bool
-	SystemUserName     string
 	SystemJoinChannels bool
 	AutoJoin           []string
 	Logfile            string
@@ -51,9 +50,6 @@ func SetupConfig() {
 		if err != nil {
 			logger.Printf("Error parsing config file: " + err.Error())
 			os.Exit(1)
-		}
-		if config.SystemUserName == "" {
-			config.SystemUserName = DefaultConf.SystemUserName
 		}
 		if config.ServerName == "" {
 			config.ServerName = DefaultConf.ServerName
@@ -85,9 +81,10 @@ func SetupConfig() {
 		if config.StatTime < 1 {
 			config.StatTime = DefaultConf.StatTime
 		}
-		SystemUser.nick = config.SystemUserName
+		SystemUser.nick = config.ServerName
 		SystemUser.host = config.ServerName
 		SystemUser.realhost = config.ServerName
+		SystemUser.realname = config.ServerDescription
 		SetupSystemUser()
 		if config.Logfile != "" {
 			f, err := os.OpenFile(config.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
