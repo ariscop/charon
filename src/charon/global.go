@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	software       = "echochat"
+	software       = "charon"
 	softwarev      = "v0.1"
 	isupport       = "NAMESX CHANTYPES=#& PREFIX=(ov)@+"
-	conf_file_name = "echochat.json"
+	conf_file_name = "charon.json"
 )
 
 type Mode4CacheItem struct {
@@ -61,7 +61,7 @@ var (
 		PingTime:           45,
 		PingCheckTime:      20,
 		ResolveHosts:       true,
-		DefaultCmode:       "nt4",
+		DefaultCmode:       "nt",
 		StatTime:           30,
 		Debug:              false,
 		Cloaking:           false,
@@ -75,7 +75,7 @@ var (
 		SystemUserName:     "system",
 		AutoJoin:           []string{"#default"},
 		SystemJoinChannels: false,
-		Logfile:            "echochat.log",
+		Logfile:            "charon.log",
 		RedisHost:          "127.0.0.1",
 		RedisPort:          6379,
 	}

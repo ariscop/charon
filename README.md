@@ -1,8 +1,5 @@
-echochat
-========
-
-[![Build Status](https://travis-ci.org/blasphemy/echochat.svg?branch=master)](https://travis-ci.org/blasphemy/echochat)[![Project Stats](https://www.openhub.net/p/echochat-ircd/widgets/project_thin_badge.gif)](https://www.openhub.net/p/echochat-ircd)
-
+charon
+======
 
 A simple ircd written in Go.
 
@@ -10,26 +7,21 @@ Requirements
 ============
 
 * Go
-
-No really, that's all. It only depends on the Go standard library. It can run anywhere that go runs. I even got it to handle a few thousand users an an android tablet.
+* gb for building
 
 Building
 ========
 
 This part probably really goes against the go workflow, but oh well. Here's the short version.
-```bash
-git clone https://github.com/blasphemy/echochat.git
-cd echochat/echat
-go build
+```console
+$ git clone https://github.com/Xe/charon
+$ gb build
 ```
-
-That's it. You should also be able to do it the normal way using ```go get```. To run it, just do ```./echat```, or ```echat.exe``` on windows. Configuration explained below.
-
-If you'd like to use ```gccgo```, there is a *very* simple build script that might work as well. Just run ```build.sh```.
 
 Configuration
 =============
-compile and run echochat to make a sample config file. It will be saved as echochat.json.
+compile and run charon to make a sample config file. It will be saved as 
+charon.json.
 
 Here's an explanation
 
