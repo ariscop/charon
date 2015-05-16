@@ -4,20 +4,21 @@ import (
 	"crypto/tls"
 	_ "expvar"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"net"
+	"net/http"
 	"os"
 	"runtime"
 	"time"
-  "net/http"
+
+	"github.com/garyburd/redigo/redis"
 )
 
 func main() {
 	e1, err := net.Listen("tcp", "0.0.0.0:8123")
 	if err != nil {
-		log.Printf("Error starting http server")
+		logger.Printf("Error starting http server")
 	} else {
-		log.Printf("Http Server Started on port 8123")
+		logger.Printf("Http Server Started on port 8123")
 		go http.Serve(e1, nil)
 	}
 	SetupNumerics()
@@ -33,29 +34,29 @@ func main() {
 		if tlser == nil {
 			tconfig = tls.Config{Certificates: []tls.Certificate{cert}}
 		} else {
-			log.Printf("TLS ERR: %s", tlser.Error())
+			logger.Printf("TLS ERR: %s", tlser.Error())
 		}
 	}
 	for _, LISTENING_IP := range config.ListenIPs {
 		for _, LISTENING_PORT := range config.ListenPorts {
 			l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", LISTENING_IP, LISTENING_PORT))
 			if err != nil {
-				log.Printf("Error listening: " + err.Error())
+				logger.Printf("Error listening: " + err.Error())
 				os.Exit(1)
 			} else {
 				listeners = append(listeners, l)
-				log.Printf("Listening on %s:%d", LISTENING_IP, LISTENING_PORT)
+				logger.Printf("Listening on %s:%d", LISTENING_IP, LISTENING_PORT)
 			}
 		}
 		if tlser == nil {
 			for _, LISTENING_PORT := range config.TLSPorts {
 				l, err := tls.Listen("tcp", fmt.Sprintf("%s:%d", LISTENING_IP, LISTENING_PORT), &tconfig)
 				if err != nil {
-					log.Printf("Error listening: " + err.Error())
+					logger.Printf("Error listening: " + err.Error())
 					os.Exit(1)
 				} else {
 					listeners = append(listeners, l)
-					log.Printf("TLS Listening on %s:%d", LISTENING_IP, LISTENING_PORT)
+					logger.Printf("TLS Listening on %s:%d", LISTENING_IP, LISTENING_PORT)
 				}
 			}
 		}
@@ -74,7 +75,7 @@ func listenerthing(l net.Listener) {
 	for {
 		conn, err := l.Accept()
 		if err != nil {
-			log.Printf("Error accepting: " + err.Error())
+			logger.Printf("Error accepting: " + err.Error())
 		} else {
 			user := NewUser()
 			user.SetConn(conn)
@@ -92,10 +93,10 @@ func checkMaxUsers() {
 
 func periodicStatusUpdate() {
 	for {
-		log.Printf("Status: %d current users", len(userlist))
-		log.Printf("Status: %d current channels", len(chanlist))
+		logger.Printf("Status: %d current users", len(userlist))
+		logger.Printf("Status: %d current channels", len(chanlist))
 		if config.Debug {
-			log.Printf("Status: %d current Goroutines", runtime.NumGoroutine())
+			logger.Printf("Status: %d current Goroutines", runtime.NumGoroutine())
 		}
 		time.Sleep(config.StatTime * time.Second)
 	}

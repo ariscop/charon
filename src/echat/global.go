@@ -2,10 +2,11 @@ package main
 
 import (
 	"container/list"
-	"github.com/garyburd/redigo/redis"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
 )
 
 const (
@@ -54,7 +55,7 @@ var (
 		ServerName:         "test.net.local",
 		ServerDescription:  "A test server",
 		DefaultKickReason:  "Your behavior is not conductive of the desired environment.",
-		DefaultKillReason:  "Your behavior is not conductive of the desired environtment.",
+		DefaultKillReason:  "Your behavior is not conductive of the desired environment.",
 		DefaultQuitReason:  "Leaving",
 		DefaultPartReason:  "Leaving",
 		PingTime:           45,
@@ -78,6 +79,6 @@ var (
 		RedisHost:          "127.0.0.1",
 		RedisPort:          6379,
 	}
-	log         = &Elog{}
+	logger      = &Elog{}
 	LoggingFile *os.File
 )

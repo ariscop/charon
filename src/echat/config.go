@@ -43,13 +43,13 @@ type configuration struct {
 func SetupConfig() {
 	confile, err := ioutil.ReadFile(conf_file_name)
 	if err != nil {
-		log.Printf("Error reading config file: " + err.Error())
+		logger.Printf("Error reading config file: " + err.Error())
 		SetupConfigDefault()
 		os.Exit(1)
 	} else {
 		err := json.Unmarshal(confile, &config)
 		if err != nil {
-			log.Printf("Error parsing config file: " + err.Error())
+			logger.Printf("Error parsing config file: " + err.Error())
 			os.Exit(1)
 		}
 		if config.SystemUserName == "" {
@@ -74,12 +74,12 @@ func SetupConfig() {
 			config.DefaultQuitReason = DefaultConf.DefaultQuitReason
 		}
 		if config.PingTime < 5 || config.PingTime > 500 {
-			log.Printf("You have a ridiculous ping time, setting it to the default of %s", DefaultConf.PingTime*time.Second)
+			logger.Printf("You have a ridiculous ping time, setting it to the default of %s", DefaultConf.PingTime*time.Second)
 			config.PingTime = DefaultConf.PingTime
 		}
 		if config.PingCheckTime > config.PingTime || config.PingCheckTime < 2 {
 			newtime := config.PingTime / 2
-			log.Printf("Your ping check time does not make senese, setting it to " + string(newtime*time.Second))
+			logger.Printf("Your ping check time does not make senese, setting it to " + string(newtime*time.Second))
 			config.PingCheckTime = newtime
 		}
 		if config.StatTime < 1 {
@@ -94,29 +94,29 @@ func SetupConfig() {
 			if err != nil {
 				k := config.Logfile
 				config.Logfile = ""
-				log.Printf("Error opening log file %s, disabling file logging", k)
+				logger.Printf("Error opening logger file %s, disabling file loggerging", k)
 			} else {
 				LoggingFile = f
 			}
 		} else {
-			log.Printf("No log file specified, disabling file logging")
+			logger.Printf("No logger file specified, disabling file loggerging")
 		}
 		StartupIncomplete = false
 	}
 }
 
 func SetupConfigDefault() {
-	log.Printf("Creating default config file")
+	logger.Printf("Creating default config file")
 	k, err := json.MarshalIndent(DefaultConf, "", "\t")
 	if err != nil {
-		log.Printf(err.Error())
+		logger.Printf(err.Error())
 		os.Exit(1)
 	}
 	err = ioutil.WriteFile(conf_file_name, k, 0644)
 	if err != nil {
-		log.Printf("Error writing config file: " + err.Error())
+		logger.Printf("Error writing config file: " + err.Error())
 		os.Exit(1)
 	}
-	log.Printf("Config file created at: " + conf_file_name)
-	log.Printf("It is highly recommended you edit this before proceeding...")
+	logger.Printf("Config file created at: " + conf_file_name)
+	logger.Printf("It is highly recommended you edit this before proceeding...")
 }

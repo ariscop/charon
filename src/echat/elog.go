@@ -1,6 +1,6 @@
 package main
 
-import oldlog "log"
+import oldlogger "log"
 import "strings"
 import "fmt"
 import "time"
@@ -10,7 +10,7 @@ type Elog struct {
 }
 
 func (elog *Elog) Printf(msg string, args ...interface{}) {
-	oldlog.Printf(msg, args...)
+	oldlogger.Printf(msg, args...)
 	WriteToLogFile(msg, args...)
 	SendLineToLogChannels(fmt.Sprintf(msg, args...))
 }
@@ -32,12 +32,12 @@ func WriteToLogFile(msg string, args ...interface{}) {
 		return
 	}
 	if config.Logfile != "" && LoggingFile != nil {
-		logstr := fmt.Sprintf("%s %s\n", time.Now().Format(time.RFC1123), fmt.Sprintf(msg, args...))
-		_, err := LoggingFile.WriteString(logstr)
+		loggerstr := fmt.Sprintf("%s %s\n", time.Now().Format(time.RFC1123), fmt.Sprintf(msg, args...))
+		_, err := LoggingFile.WriteString(loggerstr)
 		if err != nil {
 			config.Logfile = ""
-			log.Printf("ERROR: %s", err.Error())
-			log.Printf("Error writing to Logfile %s, disabling file logging", config.Logfile)
+			logger.Printf("ERROR: %s", err.Error())
+			logger.Printf("Error writing to Logfile %s, disabling file loggerging", config.Logfile)
 		}
 	}
 }

@@ -3,9 +3,10 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"strings"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
 )
 
 //Channel...
@@ -36,7 +37,7 @@ func NewChannel(newname string) *Channel {
 	chann.banlist = make(map[int]*Ban)
 	chanlist[strings.ToLower(chann.name)] = chann
 	chann.cmodes = config.DefaultCmode
-	log.Printf("Channel %s created", chann.name)
+	logger.Printf("Channel %s created", chann.name)
 	return chann
 }
 
@@ -60,7 +61,7 @@ func (channel *Channel) JoinUser(user *User) {
 	if channel.len() == 1 {
 		channel.usermodes[user] = "o"
 		if config.SystemJoinChannels {
-			SystemUser.JoinHandler([]string{"JOIN", channel.name})
+			defer SystemUser.JoinHandler([]string{"JOIN", channel.name})
 		}
 	}
 	channel.SendLinef(":%s JOIN %s", user.GetHostMask(), channel.name)
@@ -135,7 +136,7 @@ func (channel *Channel) ShouldIDie() {
 			SystemUser.PartHandler([]string{"PART", channel.name})
 		}
 		delete(chanlist, strings.ToLower(channel.name))
-		log.Printf("Channel %s has no users, destroying\n", channel.name)
+		logger.Printf("Channel %s has no users, destroying\n", channel.name)
 	}
 }
 

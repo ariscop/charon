@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	debuglog "log"
+	debuglogger "log"
 	"net"
 	"os"
 	"strings"
@@ -50,7 +50,7 @@ func (user *User) PingChecker() {
 				user.SendLine(fmt.Sprintf("PING :%s", config.ServerName))
 				user.waiting = true
 				user.nextcheck.Add(config.PingTime * time.Second)
-				log.Printf("Sent user %s ping", user.nick)
+				logger.Printf("Sent user %s ping", user.nick)
 			}
 		}
 		time.Sleep(config.PingCheckTime * time.Second)
@@ -69,7 +69,7 @@ func (user *User) QuitCommandHandler(args []string) {
 	if user.oper {
 		opercount--
 	}
-	log.Printf("User %s Quit (%s)", user.nick, reason)
+	logger.Printf("User %s Quit (%s)", user.nick, reason)
 }
 
 func (user *User) Quit(reason string) {
@@ -109,7 +109,7 @@ func NewUser() *User {
 func (user *User) SetConn(conn net.Conn) {
 	user.connection = conn
 	SetUserIPInfo(user)
-	log.Printf("New connection from " + user.realip)
+	logger.Printf("New connection from " + user.realip)
 	user.realhost = user.realip
 	if !config.Cloaking {
 		user.host = user.realip
@@ -139,11 +139,11 @@ func (user *User) SendLine(msg string) {
 	if err != nil {
 		user.dead = true
 		user.Quit("Error")
-		log.Printf("Error sending message to %s, disconnecting\n", user.nick)
+		logger.Printf("Error sending message to %s, disconnecting\n", user.nick)
 		return
 	}
 	if config.Debug {
-		debuglog.Printf("Send to %s: %s", user.nick, msg)
+		debuglogger.Printf("Send to %s: %s", user.nick, msg)
 	}
 }
 
@@ -159,7 +159,7 @@ func (user *User) HandleRequests() {
 		}
 		line, err := b.ReadString('\n')
 		if err != nil {
-			log.Printf("Error reading: " + err.Error())
+			logger.Printf("Error reading: " + err.Error())
 			user.dead = true
 			user.Quit("Error")
 			return
@@ -171,7 +171,7 @@ func (user *User) HandleRequests() {
 		}
 		line = strings.TrimSpace(line)
 		if config.Debug {
-			debuglog.Println("Receive from", fmt.Sprintf("%s:", user.nick), line)
+			debuglogger.Println("Receive from", fmt.Sprintf("%s:", user.nick), line)
 		}
 		ProcessLine(user, line)
 	}
@@ -201,7 +201,7 @@ func (user *User) NickHandler(args []string) {
 		SendToMany(fmt.Sprintf(":%s NICK %s", user.GetHostMask(), args[1]), targets)
 	}
 	user.nick = args[1]
-	log.Printf("User %s changed nick to %s", oldnick, user.nick)
+	logger.Printf("User %s changed nick to %s", oldnick, user.nick)
 	if !user.registered && user.userset {
 		user.UserRegistrationFinished()
 	}
@@ -223,7 +223,7 @@ func (user *User) UserHandler(args []string) {
 
 func (user *User) UserRegistrationFinished() {
 	user.registered = true
-	log.Printf("User %d finished registration", user.id)
+	logger.Printf("User %d finished registration", user.id)
 	user.FireNumeric(RPL_WELCOME, user.nick, user.ident, user.host)
 	user.FireNumeric(RPL_YOURHOST, config.ServerName, software, softwarev)
 	user.FireNumeric(RPL_CREATED, epoch)
@@ -265,7 +265,7 @@ func (user *User) UserHostLookup() {
 }
 
 func (user *User) CommandNotFound(args []string) {
-	log.Printf("User %s attempted unknown command %s", user.nick, args[0])
+	logger.Printf("User %s attempted unknown command %s", user.nick, args[0])
 	user.FireNumeric(ERR_UNKNOWNCOMMAND, args[0])
 }
 
@@ -288,21 +288,21 @@ func (user *User) JoinHandler(args []string) {
 	}
 	if channel.HasMode("A") && !user.oper {
 		//TODO definitely fire numeric for this
-		log.Printf("User %s tried to join %s while +A was set.", user.nick, channel.name)
+		logger.Printf("User %s tried to join %s while +A was set.", user.nick, channel.name)
 		return
 	}
 	if channel.HasUser(user) {
-		log.Printf("User %s tried to join %s while already joined.", user.nick, channel.name)
+		logger.Printf("User %s tried to join %s while already joined.", user.nick, channel.name)
 		return //should this silently fail?
 	}
 	if channel.IsUserBanned(user) && !user.oper {
 		user.FireNumeric(RPL_BANNEDFROMCHAN, channel.name)
-		log.Printf("User %s tried to join %s while banned.", user.nick, channel.name)
+		logger.Printf("User %s tried to join %s while banned.", user.nick, channel.name)
 		return
 	}
 	channel.JoinUser(user)
 	user.chanlist[channel.name] = channel
-	log.Printf("User %s joined %s", user.nick, channel.name)
+	logger.Printf("User %s joined %s", user.nick, channel.name)
 }
 
 func (user *User) LusersHandler(args []string) {
@@ -331,7 +331,7 @@ func (user *User) PartHandler(args []string) {
 		delete(channel.userlist, user.id)
 		delete(user.chanlist, channel.name)
 		delete(channel.usermodes, user)
-		log.Printf("User %s PART %s: %s", user.nick, channel.name, reason)
+		logger.Printf("User %s PART %s: %s", user.nick, channel.name, reason)
 		channel.ShouldIDie()
 	} //else?
 }
@@ -389,14 +389,14 @@ func (user *User) PrivmsgHandler(args []string) {
 					}
 				}
 			}
-			var logchan bool
+			var loggerchan bool
 			for _, testc := range config.LogChannels {
 				if GetChannelByName(testc) == j {
-					logchan = true
+					loggerchan = true
 				}
 			}
-			if !logchan && !config.Privacy {
-				log.Printf("User %s CHANMSG %s: %s", user.nick, j.name, msg)
+			if !loggerchan && !config.Privacy {
+				logger.Printf("User %s CHANMSG %s: %s", user.nick, j.name, msg)
 			}
 			return
 		} else {
@@ -410,7 +410,7 @@ func (user *User) PrivmsgHandler(args []string) {
 			msg := FormatMessageArgs(args)
 			target.SendLinef(":%s PRIVMSG %s :%s", user.GetHostMask(), target.nick, msg)
 			if !config.Privacy {
-				log.Printf("User %s PRIVMSG %s: %s", user.nick, target.nick, msg)
+				logger.Printf("User %s PRIVMSG %s: %s", user.nick, target.nick, msg)
 
 			}
 		}
@@ -449,7 +449,7 @@ func (user *User) ModeHandler(args []string) {
 		if len(args) < 3 {
 			//just digging around...
 			channel.FireModes(user)
-			log.Printf("User %s requested modes for %s", user.nick, channel.name)
+			logger.Printf("User %s requested modes for %s", user.nick, channel.name)
 		} else {
 			s := args[2]
 			mode := 0
@@ -601,7 +601,7 @@ func (user *User) KickHandler(args []string) {
 	delete(channel.userlist, target.id)
 	delete(target.chanlist, channel.name)
 	delete(channel.usermodes, target)
-	log.Printf("%s kicked %s from %s", user.nick, target.nick, channel.name)
+	logger.Printf("%s kicked %s from %s", user.nick, target.nick, channel.name)
 	channel.ShouldIDie()
 }
 
@@ -644,7 +644,7 @@ func (user *User) RehashHandler(args []string) {
 	if user.oper {
 		SetupConfig()
 		user.FireNumeric(RPL_REHASHING, conf_file_name)
-		log.Printf("OPER %s requested rehash...", user.nick)
+		logger.Printf("OPER %s requested rehash...", user.nick)
 	} else {
 		user.CommandNotFound(args)
 	}
@@ -652,7 +652,7 @@ func (user *User) RehashHandler(args []string) {
 
 func (user *User) ShutdownHandler(args []string) {
 	if user.oper {
-		log.Printf("Shutdown requested by OPER %s", user.nick)
+		logger.Printf("Shutdown requested by OPER %s", user.nick)
 		for _, k := range userlist {
 			k.Quit(fmt.Sprintf("Server is being shutdown by %s", user.nick))
 		}
@@ -681,7 +681,7 @@ func (user *User) KillHandler(args []string) {
 					reason = config.DefaultKillReason
 				}
 				bill.Quit(fmt.Sprintf("KILL: %s", reason))
-				log.Printf("oper %s killed %s (%s)", user.nick, bill.nick, reason)
+				logger.Printf("oper %s killed %s (%s)", user.nick, bill.nick, reason)
 			}
 		}
 	} else {
