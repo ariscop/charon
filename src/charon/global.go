@@ -72,7 +72,6 @@ var (
 		LogChannels:        []string{"#log", "#opers"},
 		Opers:              map[string]string{"default": "password"},
 		Privacy:            false,
-		SystemUserName:     "system",
 		AutoJoin:           []string{"#default"},
 		SystemJoinChannels: false,
 		Logfile:            "charon.log",

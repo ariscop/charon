@@ -93,10 +93,10 @@ func checkMaxUsers() {
 
 func periodicStatusUpdate() {
 	for {
-		logger.Printf("Status: %d current users", len(userlist))
-		logger.Printf("Status: %d current channels", len(chanlist))
 		if config.Debug {
 			logger.Printf("Status: %d current Goroutines", runtime.NumGoroutine())
+			logger.Printf("Status: %d current users", len(userlist))
+			logger.Printf("Status: %d current channels", len(chanlist))
 		}
 		time.Sleep(config.StatTime * time.Second)
 	}
