@@ -278,31 +278,34 @@ func (user *User) JoinHandler(args []string) {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "JOIN")
 		return
 	}
-	if !ValidChanName(args[1]) {
-		user.FireNumeric(ERR_NOSUCHCHANNEL, args[1])
-		return
+
+	for _, channame := range strings.Split(args[1], ",") {
+		if !ValidChanName(channame) {
+			user.FireNumeric(ERR_NOSUCHCHANNEL, channame)
+			return
+		}
+		channel := GetChannelByName(channame)
+		if channel == nil {
+			channel = NewChannel(channame)
+		}
+		if channel.HasMode("A") && !user.oper {
+			//TODO definitely fire numeric for this
+			logger.Printf("User %s tried to join %s while +A was set.", user.nick, channel.name)
+			return
+		}
+		if channel.HasUser(user) {
+			logger.Printf("User %s tried to join %s while already joined.", user.nick, channel.name)
+			return //should this silently fail?
+		}
+		if channel.IsUserBanned(user) && !user.oper {
+			user.FireNumeric(RPL_BANNEDFROMCHAN, channel.name)
+			logger.Printf("User %s tried to join %s while banned.", user.nick, channel.name)
+			return
+		}
+		channel.JoinUser(user)
+		user.chanlist[channel.name] = channel
+		logger.Printf("User %s joined %s", user.nick, channel.name)
 	}
-	channel := GetChannelByName(args[1])
-	if channel == nil {
-		channel = NewChannel(args[1])
-	}
-	if channel.HasMode("A") && !user.oper {
-		//TODO definitely fire numeric for this
-		logger.Printf("User %s tried to join %s while +A was set.", user.nick, channel.name)
-		return
-	}
-	if channel.HasUser(user) {
-		logger.Printf("User %s tried to join %s while already joined.", user.nick, channel.name)
-		return //should this silently fail?
-	}
-	if channel.IsUserBanned(user) && !user.oper {
-		user.FireNumeric(RPL_BANNEDFROMCHAN, channel.name)
-		logger.Printf("User %s tried to join %s while banned.", user.nick, channel.name)
-		return
-	}
-	channel.JoinUser(user)
-	user.chanlist[channel.name] = channel
-	logger.Printf("User %s joined %s", user.nick, channel.name)
 }
 
 func (user *User) LusersHandler(args []string) {
