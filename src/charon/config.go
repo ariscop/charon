@@ -115,5 +115,6 @@ func SetupConfigDefault() {
 		os.Exit(1)
 	}
 	logger.Printf("Config file created at: " + conf_file_name)
-	logger.Printf("It is highly recommended you edit this before proceeding...")
+	logger.Printf("You must edit this before proceeding.")
+	os.Exit(1)
 }
