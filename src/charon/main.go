@@ -110,9 +110,12 @@ func SetupPool() {
 			if err != nil {
 				return nil, err
 			}
-			if _, err := c.Do("AUTH", config.RedisPassword); err != nil {
-				c.Close()
-				return nil, err
+
+			if config.RedisPassword != "" {
+				if _, err := c.Do("AUTH", config.RedisPassword); err != nil {
+					c.Close()
+					return nil, err
+				}
 			}
 			return c, nil
 		},
