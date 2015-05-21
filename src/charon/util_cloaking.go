@@ -4,10 +4,8 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"strings"
-	"utils/crypto"
 )
 
-//TODO make this prettier
 func CloakIP6(text string) string {
 	stuff := strings.Split(text, ":")
 	stuff[len(stuff)-1] = CloakString(stuff[len(stuff)-1], config.Salt)
@@ -23,24 +21,37 @@ func CloakIP6(text string) string {
 func CloakIP4(text string) string {
 	stuff := strings.Split(text, ".")
 	stuff[len(stuff)-1] = CloakString(stuff[len(stuff)-1], config.Salt)
-	stuff[len(stuff)-2] = CloakString(stuff[len(stuff)-2], config.Salt)
+	stuff[len(stuff)-2] = CloakString(stuff[len(stuff)-2], config.Salt+stuff[len(stuff)-2])
 	text = strings.Join(stuff, ".")
 	return text
 }
 
 func CloakHost(text string) string {
-	//hostname mode
-	if text == "localhost" {
-		return "localhost"
-	}
 	stuff := strings.Split(text, ".")
-	stuff[0] = CloakString(stuff[0], config.Salt)
+	stuff[0] = CloakString(stuff[0], config.Salt+text)
 	text = strings.Join(stuff, ".")
 	return text
 }
 
 func CloakString(text string, salt string) string {
-	return crypto.Fnv(salt + text)
+	var r string
+	r = Sha1String(text + salt)
+	for len(r) < len(text) {
+		r = r + Sha1String(r)
+	}
+
+	side := true
+	for len(r) > len(text) {
+		if side {
+			r = r[1:]
+			side = false
+		} else {
+			r = r[:len(r)-1]
+			side = true
+		}
+	}
+
+	return r
 }
 
 func Sha1String(text string) string {
