@@ -28,7 +28,7 @@ var (
 	RedisPool         *redis.Pool
 	StartupIncomplete = true //used to determine if the ircd is up and running yet
 	valid_chan_prefix = []string{"#", "&"}
-	global_bad_chars  = []string{":", "!", "@", "*", "(", ")", "<", ">", ",", "~", "/", "\\"}
+	global_bad_chars  = []string{","}
 	config            *configuration
 	counter           = 1
 	userlist          = make(map[int]*User)
