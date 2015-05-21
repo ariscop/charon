@@ -142,7 +142,7 @@ func (user *User) SendLine(msg string) {
 		logger.Printf("Error sending message to %s, disconnecting\n", user.nick)
 		return
 	}
-	if config.Debug {
+	if *debugFlag {
 		debuglogger.Printf("Send to %s: %s", user.nick, msg)
 	}
 }
@@ -170,7 +170,7 @@ func (user *User) HandleRequests() {
 			return
 		}
 		line = strings.TrimSpace(line)
-		if config.Debug {
+		if *debugFlag {
 			debuglogger.Println("Receive from", fmt.Sprintf("%s:", user.nick), line)
 		}
 		ProcessLine(user, line)
@@ -237,7 +237,7 @@ func (user *User) UserRegistrationFinished() {
 		user.FireNumeric(RPL_HOSTHIDDEN, user.host)
 	}
 
-	if config.Debug {
+	if *debugFlag {
 		user.SendLinef(":%s NOTICE %s :This server is in debug mode. Someone is attached to the console reading debug output. Tread with care.", config.ServerName, user.nick)
 	}
 
@@ -667,8 +667,8 @@ func (user *User) NamesHandler(args []string) {
 
 func (user *User) RehashHandler(args []string) {
 	if user.oper {
-		SetupConfig()
-		user.FireNumeric(RPL_REHASHING, conf_file_name)
+		SetupConfig(*configFlag)
+		user.FireNumeric(RPL_REHASHING, *configFlag)
 		logger.Printf("OPER %s requested rehash...", user.nick)
 	} else {
 		user.CommandNotFound(args)

@@ -10,10 +10,9 @@ import (
 )
 
 const (
-	software       = "charon"
-	softwarev      = "v0.1"
-	isupport       = "NAMESX CHANTYPES=#& PREFIX=(ov)@+"
-	conf_file_name = "charon.json"
+	software  = "charon"
+	softwarev = "v0.1"
+	isupport  = "NAMESX CHANTYPES=#& PREFIX=(ov)@+"
 )
 
 type Mode4CacheItem struct {
@@ -63,7 +62,6 @@ var (
 		ResolveHosts:       true,
 		DefaultCmode:       "nt",
 		StatTime:           30,
-		Debug:              false,
 		Cloaking:           false,
 		OpersKickable:      false,
 		Salt:               "default",

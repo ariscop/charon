@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	_ "expvar"
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -13,7 +14,14 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+var (
+	debugFlag  = flag.Bool("debug", false, "Run server in debug mode?")
+	configFlag = flag.String("config", "charon.json", "Configuration file to use")
+)
+
 func main() {
+	flag.Parse()
+
 	e1, err := net.Listen("tcp", "0.0.0.0:8123")
 	if err != nil {
 		logger.Printf("Error starting http server")
@@ -21,8 +29,9 @@ func main() {
 		logger.Printf("Http Server Started on port 8123")
 		go http.Serve(e1, nil)
 	}
+
 	SetupNumerics()
-	SetupConfig()
+	SetupConfig(*configFlag)
 	SetupPool()
 	var listeners []net.Listener
 	// Listen for incoming connections.
@@ -61,13 +70,16 @@ func main() {
 			}
 		}
 	}
+
 	// Close the listener when the application closes.
 	for _, l := range listeners {
 		defer l.Close()
 	}
+
 	for _, l := range listeners {
 		go listenerthing(l)
 	}
+
 	periodicStatusUpdate()
 }
 
@@ -93,7 +105,7 @@ func checkMaxUsers() {
 
 func periodicStatusUpdate() {
 	for {
-		if config.Debug {
+		if *debugFlag {
 			logger.Printf("Status: %d current Goroutines", runtime.NumGoroutine())
 			logger.Printf("Status: %d current users", len(userlist))
 			logger.Printf("Status: %d current channels", len(chanlist))
