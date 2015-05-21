@@ -368,20 +368,27 @@ func (user *User) PrivmsgHandler(args []string) {
 				user.FireNumeric(ERR_CANNOTSENDTOCHAN, j.name)
 				return
 			}
+
 			userpriv := j.GetUserPriv(user)
+
 			if j.HasMode("m") && userpriv < 10 && !user.oper {
 				user.FireNumeric(ERR_CANNOTSENDTOCHAN, j.name)
 				return
 			}
+
 			if j.IsUserBanned(user) && userpriv < 10 && !user.oper {
 				user.FireNumeric(ERR_CANNOTSENDTOCHAN, j.name)
 				return
 			}
+
 			//channel exists, send the message
 			msg := FormatMessageArgs(args)
+
 			c, _ := j.GetCount()
 			AddToMode4Cache(user, c, j)
+
 			list := j.GetUserList()
+
 			for _, l := range list {
 				if l != user {
 					if j.HasMode("4") {
