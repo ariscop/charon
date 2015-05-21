@@ -34,6 +34,7 @@ type User struct {
 	oper       bool
 	system     bool
 	ConnType   string
+	resolved   chan bool
 }
 
 func (user *User) PingChecker() {
@@ -103,6 +104,7 @@ func NewUser() *User {
 	user.lastrcv = time.Now()
 	user.nextcheck = time.Now().Add(config.PingTime * time.Second)
 	userlist[user.id] = user
+	user.resolved = make(chan bool)
 	return user
 }
 
@@ -224,6 +226,8 @@ func (user *User) UserHandler(args []string) {
 }
 
 func (user *User) UserRegistrationFinished() {
+	<-user.resolved // Wait for DNS resolution
+
 	user.registered = true
 	logger.Printf("User %d finished registration", user.id)
 	user.FireNumeric(RPL_WELCOME, user.nick, user.ident, user.host)
@@ -252,6 +256,11 @@ func (user *User) UserRegistrationFinished() {
 }
 
 func (user *User) UserHostLookup() {
+	// wait for the reverse DNS lookup to finish
+	defer func() {
+		user.resolved <- true
+	}()
+
 	user.SendLinef(":%s NOTICE %s :*** Looking up your hostname...", config.ServerName, user.nick)
 	adds, err := net.LookupAddr(user.realip)
 	if err != nil {
