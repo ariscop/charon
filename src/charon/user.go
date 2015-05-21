@@ -436,7 +436,6 @@ func (user *User) PrivmsgHandler(args []string) {
 			target.SendLinef(":%s PRIVMSG %s :%s", user.GetHostMask(), target.nick, msg)
 			if !config.Privacy {
 				logger.Printf("User %s PRIVMSG %s: %s", user.nick, target.nick, msg)
-
 			}
 		}
 	}

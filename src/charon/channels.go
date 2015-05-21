@@ -271,10 +271,6 @@ func (channel *Channel) IsLogChan() bool {
 func (channel *Channel) GetCount() (int64, error) {
 	p := RedisPool.Get()
 
-	if *debugFlag {
-		logger.Printf("Trying to log %s to redis", channel.name)
-	}
-
 	c, err := redis.Int64(p.Do("INCR", fmt.Sprintf("charon:counter:%s", channel.name)))
 
 	if err != nil {
