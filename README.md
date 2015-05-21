@@ -4,23 +4,29 @@ charon
 A simple ircd written in Go.
 
 Requirements
-============
+------------
 
 * Go
 * gb for building
 
 Building
-========
+--------
 
-This part probably really goes against the go workflow, but oh well. Here's the short version.
 ```console
 $ git clone https://github.com/Xe/charon
 $ gb build
 ```
 
+Development
+-----------
+
+Source `./env.sh` for a quicker way to load the preferred GOPATH for things 
+like vim.
+
 Configuration
-=============
-compile and run charon to make a sample config file. It will be saved as 
+-------------
+
+Compile and run charon to make a sample config file. It will be saved as 
 charon.json.
 
 Here's an explanation
