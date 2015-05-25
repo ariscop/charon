@@ -47,6 +47,10 @@ func ProcessLine(user *User, msg string) {
 
 	mymsg := message.ParseMessage(msg)
 
+	//XXX HACK: make things work for now
+	//TODO: remove this
+	mymsg.Args = append([]string{mymsg.Verb}, mymsg.Args...)
+
 	log.Printf("%s: %#v", msg, mymsg)
 
 	handler, ok := Handlers[mymsg.Verb]
