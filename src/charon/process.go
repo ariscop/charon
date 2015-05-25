@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-type Handler func(*User, []string)
+type Handler func(*User, *message.Message)
 
 var Handlers map[string]Handler
 
-func NullHandler(u *User, s []string) {}
+func NullHandler(u *User, m *message.Message) {}
 
 func init() {
 	Handlers = map[string]Handler{
@@ -47,32 +47,26 @@ func ProcessLine(user *User, msg string) {
 
 	mymsg := message.ParseMessage(msg)
 
-	//XXX HACK: make things work for now
-	//TODO: remove this
-	mymsg.Args = append([]string{mymsg.Verb}, mymsg.Args...)
-
-	log.Printf("%s: %#v", msg, mymsg)
-
 	handler, ok := Handlers[mymsg.Verb]
 	log.Printf("Handler %#v: %v", handler, ok)
 	if ok {
 		switch mymsg.Verb {
 		case "CAP", "NICK", "USER", "QUIT", "PONG", "PING":
 			log.Printf("Running raw handler for %s", mymsg.Verb)
-			handler(user, mymsg.Args)
+			handler(user, mymsg)
 
 		default:
 			log.Printf("Running protected handler for %s", mymsg.Verb)
-			FireIfRegistered(handler, user, mymsg.Args)
+			FireIfRegistered(handler, user, mymsg)
 		}
 	} else {
-		CommandNotFound(user, mymsg.Args)
+		CommandNotFound(user, mymsg)
 	}
 }
 
-func FireIfRegistered(handler Handler, user *User, args []string) {
+func FireIfRegistered(handler Handler, user *User, line *message.Message) {
 	if user.registered {
-		handler(user, args)
+		handler(user, line)
 	} else {
 		user.FireNumeric(ERR_NOTREGISTERED)
 	}

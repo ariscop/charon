@@ -1,6 +1,7 @@
 package main
 
 import (
+	"irc/message"
 	"strings"
 )
 
@@ -57,13 +58,6 @@ func ValidChanName(name string) bool {
 	return false
 }
 
-//IMPORTANT: args must ABSOLUTELY be a valid privmsg command, or this will not work
-//validity does not depend on leading ":", I don't care that much
-func FormatMessageArgs(args []string) string {
-	msg := strings.Join(args[2:], " ")
-	return strings.TrimPrefix(msg, ":")
-}
-
 func NickHasBadChars(nick string) bool {
 	for _, k := range global_bad_chars {
 		if strings.Contains(nick, k) {
@@ -111,12 +105,12 @@ func WildcardMatch(text string, pattern string) bool {
 
 func SetupSystemUser() {
 	for _, k := range config.LogChannels {
-		ModeHandler(SystemUser, []string{"MODE", k, "+A"})
+		ModeHandler(SystemUser, &message.Message{Args: []string{k, "+A"}})
 	}
 	if !config.SystemJoinChannels {
 		for _, k := range SystemUser.chanlist {
 			if !k.IsLogChan() {
-				PartHandler(SystemUser, []string{"PART", k.name})
+				PartHandler(SystemUser, &message.Message{Args: []string{"PART", k.name}})
 			}
 		}
 	}

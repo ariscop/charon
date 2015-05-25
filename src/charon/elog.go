@@ -1,7 +1,10 @@
 package main
 
-import oldlogger "log"
-import "strings"
+import (
+	"irc/message"
+	oldlogger "log"
+)
+
 import "fmt"
 import "time"
 
@@ -19,11 +22,9 @@ func SendLineToLogChannels(msg string) {
 	if StartupIncomplete {
 		return
 	}
-	msg2 := strings.Split(msg, " ")
+
 	for _, k := range config.LogChannels {
-		sender := []string{"NOTICE", k}
-		sender = append(sender, msg2...)
-		PrivmsgHandler(SystemUser, sender)
+		PrivmsgHandler(SystemUser, &message.Message{Args: []string{k, msg}})
 	}
 }
 
