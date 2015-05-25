@@ -2,90 +2,73 @@
 package main
 
 import (
-	"strings"
+	"irc/message"
+	"log"
 	"time"
 )
 
-type Handler func([]string)
+type Handler func(*User, []string)
+
+var Handlers map[string]Handler
+
+func NullHandler(u *User, s []string) {}
+
+func init() {
+	Handlers = map[string]Handler{
+		"QUIT":     QuitCommandHandler,
+		"NICK":     NickHandler,
+		"USER":     UserHandler,
+		"JOIN":     JoinHandler,
+		"PRIVMSG":  PrivmsgHandler,
+		"PONG":     NullHandler, // TODO: Implement
+		"LUSERS":   LusersHandler,
+		"PART":     PartHandler,
+		"TOPIC":    TopicHandler,
+		"CAP":      NullHandler, // TODO: Implement
+		"MODE":     ModeHandler,
+		"PING":     PingHandler,
+		"WHO":      WhoHandler,
+		"KICK":     KickHandler,
+		"LIST":     ListHandler,
+		"NAMES":    NamesHandler,
+		"OPER":     OperHandler,
+		"REHASH":   RehashHandler,
+		"SHUTDOWN": ShutdownHandler,
+		"KILL":     KillHandler,
+		"WHOIS":    WhoisHandler,
+	}
+}
 
 //takes a line and a user and processes it.
 func ProcessLine(user *User, msg string) {
 	user.lastrcv = time.Now()
 	user.nextcheck = time.Now().Add(config.PingTime * time.Second)
 	user.waiting = false
-	args := strings.Split(msg, " ")
-	checkme := strings.ToLower(args[0])
-	switch checkme {
-	case "quit":
-		user.QuitCommandHandler(args)
-		break
-	case "nick":
-		user.NickHandler(args)
-		break
-	case "user":
-		user.UserHandler(args)
-		break
-	case "join":
-		user.FireIfRegistered(user.JoinHandler, args)
-		break
-	case "privmsg":
-		user.FireIfRegistered(user.PrivmsgHandler, args)
-		break
-	case "pong":
-		break //lol nothing
-	case "lusers":
-		user.FireIfRegistered(user.LusersHandler, args)
-		break
-	case "part":
-		user.FireIfRegistered(user.PartHandler, args)
-		break
-	case "topic":
-		user.FireIfRegistered(user.TopicHandler, args)
-		break
-	case "protoctl":
-		break
-	case "mode":
-		user.FireIfRegistered(user.ModeHandler, args)
-		break
-	case "ping":
-		user.PingCmd(args)
-		break
-	case "who":
-		user.FireIfRegistered(user.WhoHandler, args)
-		break
-	case "kick":
-		user.FireIfRegistered(user.KickHandler, args)
-		break
-	case "list":
-		user.FireIfRegistered(user.ListHandler, args)
-		break
-	case "names":
-		user.FireIfRegistered(user.NamesHandler, args)
-		break
-	case "oper":
-		user.FireIfRegistered(user.OperHandler, args)
-		break
-	case "rehash":
-		user.FireIfRegistered(user.RehashHandler, args)
-		break
-	case "shutdown":
-		user.FireIfRegistered(user.ShutdownHandler, args)
-		break
-	case "kill":
-		user.FireIfRegistered(user.KillHandler, args)
-		break
-	case "whois":
-		user.FireIfRegistered(user.WhoisHandler, args)
-		break
-	default:
-		user.CommandNotFound(args)
-		break
+
+	mymsg := message.ParseMessage(msg)
+
+	log.Printf("%s: %#v", msg, mymsg)
+
+	handler, ok := Handlers[mymsg.Verb]
+	log.Printf("Handler %#v: %v", handler, ok)
+	if ok {
+		switch mymsg.Verb {
+		case "CAP", "NICK", "USER", "QUIT", "PONG", "PING":
+			log.Printf("Running raw handler for %s", mymsg.Verb)
+			handler(user, mymsg.Args)
+
+		default:
+			log.Printf("Running protected handler for %s", mymsg.Verb)
+			FireIfRegistered(handler, user, mymsg.Args)
+		}
+	} else {
+		CommandNotFound(user, mymsg.Args)
 	}
 }
 
-func (user *User) FireIfRegistered(handler Handler, args []string) {
+func FireIfRegistered(handler Handler, user *User, args []string) {
 	if user.registered {
-		handler(args)
+		handler(user, args)
 	} else {
 		user.FireNumeric(ERR_NOTREGISTERED)
 	}

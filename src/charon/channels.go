@@ -61,7 +61,7 @@ func (channel *Channel) JoinUser(user *User) {
 	if channel.len() == 1 {
 		channel.usermodes[user] = "o"
 		if config.SystemJoinChannels {
-			defer SystemUser.JoinHandler([]string{"JOIN", channel.name})
+			defer JoinHandler(SystemUser, []string{"JOIN", channel.name})
 		}
 	}
 	channel.SendLinef(":%s JOIN %s", user.GetHostMask(), channel.name)
@@ -133,7 +133,7 @@ func (channel *Channel) GetUserPriv(user *User) int {
 func (channel *Channel) ShouldIDie() {
 	if channel.len() < 1 {
 		if channel.HasUser(SystemUser) {
-			SystemUser.PartHandler([]string{"PART", channel.name})
+			PartHandler(SystemUser, []string{"PART", channel.name})
 		}
 		delete(chanlist, strings.ToLower(channel.name))
 		logger.Printf("Channel %s has no users, destroying\n", channel.name)

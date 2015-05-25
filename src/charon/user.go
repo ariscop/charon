@@ -58,7 +58,7 @@ func (user *User) PingChecker() {
 	}
 }
 
-func (user *User) QuitCommandHandler(args []string) {
+func QuitCommandHandler(user *User, args []string) {
 	var reason string
 	if len(args) > 1 {
 		args[1] = strings.TrimPrefix(args[1], ":")
@@ -178,7 +178,7 @@ func (user *User) HandleRequests() {
 		ProcessLine(user, line)
 	}
 }
-func (user *User) NickHandler(args []string) {
+func NickHandler(user *User, args []string) {
 	oldnick := user.nick
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NONICKNAMEGIVEN)
@@ -209,7 +209,7 @@ func (user *User) NickHandler(args []string) {
 	}
 }
 
-func (user *User) UserHandler(args []string) {
+func UserHandler(user *User, args []string) {
 	if len(args) < 5 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "USER")
 		return
@@ -249,9 +249,9 @@ func (user *User) UserRegistrationFinished() {
 		user.SendLinef(":%s NOTICE %s :This server has privacy protections disabled.", config.ServerName, user.nick)
 	}
 
-	user.LusersHandler([]string{})
+	LusersHandler(user, []string{})
 	for _, k := range config.AutoJoin {
-		user.JoinHandler([]string{"JOIN", k})
+		JoinHandler(user, []string{"JOIN", k})
 	}
 }
 
@@ -289,7 +289,7 @@ func (user *User) UserHostLookup() {
 	user.SendLinef(":%s NOTICE %s :*** Your forward and reverse DNS do not match, ignoring hostname", config.ServerName, user.nick)
 }
 
-func (user *User) CommandNotFound(args []string) {
+func CommandNotFound(user *User, args []string) {
 	logger.Printf("User %s attempted unknown command %s", user.nick, args[0])
 	user.FireNumeric(ERR_UNKNOWNCOMMAND, args[0])
 }
@@ -298,7 +298,7 @@ func (user *User) GetHostMask() string {
 	return fmt.Sprintf("%s!%s@%s", user.nick, user.ident, user.host)
 }
 
-func (user *User) JoinHandler(args []string) {
+func JoinHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "JOIN")
 		return
@@ -333,14 +333,14 @@ func (user *User) JoinHandler(args []string) {
 	}
 }
 
-func (user *User) LusersHandler(args []string) {
+func LusersHandler(user *User, args []string) {
 	user.FireNumeric(RPL_LUSERCLIENT, len(userlist), 1, 1)
 	user.FireNumeric(RPL_LUSEROP, opercount)
 	user.FireNumeric(RPL_LUSERCHANNELS, len(chanlist))
 	user.FireNumeric(RPL_LUSERME, len(userlist), 1)
 }
 
-func (user *User) PartHandler(args []string) {
+func PartHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "PART")
 		return
@@ -363,7 +363,7 @@ func (user *User) PartHandler(args []string) {
 	} //else?
 }
 
-func (user *User) PrivmsgHandler(args []string) {
+func PrivmsgHandler(user *User, args []string) {
 	if len(args) < 3 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "PRIVMSG")
 		return
@@ -450,7 +450,7 @@ func (user *User) PrivmsgHandler(args []string) {
 	}
 }
 
-func (user *User) TopicHandler(args []string) {
+func TopicHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "TOPIC")
 		return
@@ -472,7 +472,7 @@ func (user *User) TopicHandler(args []string) {
 	k.SetTopic(msg, user.GetHostMask())
 }
 
-func (user *User) ModeHandler(args []string) {
+func ModeHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "MODE")
 		return
@@ -563,7 +563,7 @@ func (user *User) IsIn(channel *Channel) bool {
 	return false
 }
 
-func (user *User) PingCmd(args []string) {
+func PingHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "PING")
 		return
@@ -572,7 +572,7 @@ func (user *User) PingCmd(args []string) {
 	user.SendLinef(":%s PONG %s :%s", config.ServerName, config.ServerName, args[1])
 }
 
-func (user *User) WhoHandler(args []string) {
+func WhoHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "WHO")
 		return
@@ -595,7 +595,7 @@ func (user *User) WhoHandler(args []string) {
 	user.FireNumeric(RPL_ENDOFWHO, args[1])
 }
 
-func (user *User) KickHandler(args []string) {
+func KickHandler(user *User, args []string) {
 	if len(args) < 3 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "KICK")
 	}
@@ -638,7 +638,7 @@ func (user *User) KickHandler(args []string) {
 	channel.ShouldIDie()
 }
 
-func (user *User) ListHandler(args []string) {
+func ListHandler(user *User, args []string) {
 	user.FireNumeric(RPL_LISTSTART)
 	for _, k := range chanlist {
 		user.FireNumeric(RPL_LIST, k.name, len(k.userlist), k.topic)
@@ -646,21 +646,23 @@ func (user *User) ListHandler(args []string) {
 	user.FireNumeric(RPL_LISTEND)
 }
 
-func (user *User) OperHandler(args []string) {
+func OperHandler(user *User, args []string) {
 	if len(args) < 3 {
-		user.CommandNotFound(args)
+		CommandNotFound(user, args)
 		return
 	}
+
+	//TODO: Add password hashing via b2sum -- Xena
 	if config.Opers[args[1]] == args[2] {
 		user.oper = true
 		opercount++
 		user.FireNumeric(RPL_YOUREOPER)
 	} else {
-		user.CommandNotFound(args)
+		CommandNotFound(user, args)
 	}
 }
 
-func (user *User) NamesHandler(args []string) {
+func NamesHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "NAMES")
 		return
@@ -673,17 +675,18 @@ func (user *User) NamesHandler(args []string) {
 	channel.FireNames(user)
 }
 
-func (user *User) RehashHandler(args []string) {
+func RehashHandler(user *User, args []string) {
 	if user.oper {
 		SetupConfig(*configFlag)
 		user.FireNumeric(RPL_REHASHING, *configFlag)
 		logger.Printf("OPER %s requested rehash...", user.nick)
 	} else {
-		user.CommandNotFound(args)
+		CommandNotFound(user, args)
 	}
 }
 
-func (user *User) ShutdownHandler(args []string) {
+func ShutdownHandler(user *User, args []string) {
+	//TODO: rename to DIE -- Xena
 	if user.oper {
 		logger.Printf("Shutdown requested by OPER %s", user.nick)
 		for _, k := range userlist {
@@ -691,11 +694,11 @@ func (user *User) ShutdownHandler(args []string) {
 		}
 		os.Exit(0)
 	} else {
-		user.CommandNotFound(args)
+		CommandNotFound(user, args)
 	}
 }
 
-func (user *User) KillHandler(args []string) {
+func KillHandler(user *User, args []string) {
 	if user.oper {
 		if len(args) < 2 {
 			user.FireNumeric(ERR_NEEDMOREPARAMS, "KILL")
@@ -718,11 +721,11 @@ func (user *User) KillHandler(args []string) {
 			}
 		}
 	} else {
-		user.CommandNotFound(args)
+		CommandNotFound(user, args)
 	}
 }
 
-func (user *User) WhoisHandler(args []string) {
+func WhoisHandler(user *User, args []string) {
 	if len(args) < 2 {
 		user.FireNumeric(ERR_NEEDMOREPARAMS, "WHOIS")
 		return

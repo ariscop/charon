@@ -23,7 +23,7 @@ func SendLineToLogChannels(msg string) {
 	for _, k := range config.LogChannels {
 		sender := []string{"NOTICE", k}
 		sender = append(sender, msg2...)
-		SystemUser.PrivmsgHandler(sender)
+		PrivmsgHandler(SystemUser, sender)
 	}
 }
 
