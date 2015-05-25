@@ -620,9 +620,6 @@ func KickHandler(user *User, args []string) {
 	if user.system {
 		return //This could be bad.
 	}
-	if target.oper && !config.OpersKickable {
-		return // >:|
-	}
 	var reason string
 	if len(args) > 3 {
 		reason = strings.Join(args[3:], " ")
