@@ -1,6 +1,7 @@
 package message
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -38,7 +39,7 @@ func ParseMessage(line string) (message *Message) {
 		index++
 	}
 
-	message.Verb = fields[index]
+	message.Verb = strings.ToUpper(fields[index])
 	index++
 
 	for i := index; i < len(fields); i++ {
@@ -50,5 +51,26 @@ func ParseMessage(line string) (message *Message) {
 		}
 		message.Args = append(message.Args, field)
 	}
+	return
+}
+
+// String returns the serialized form of a RawLine as an RFC 1459 frame.
+func (r *Message) String() (res string) {
+	if r.Source != "" {
+		res = res + fmt.Sprintf(":%s ", r.Source)
+	}
+
+	res = res + fmt.Sprintf("%s", r.Verb)
+
+	for i, arg := range r.Args {
+		res = res + " "
+
+		if i == len(r.Args)-1 { // Make the last part of the line an extparam
+			res = res + ":"
+		}
+
+		res = res + arg
+	}
+
 	return
 }
