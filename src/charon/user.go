@@ -36,6 +36,28 @@ type User struct {
 	resolved   chan bool
 }
 
+func (user *User) Quit(reason string) {
+	targets := []*User{user}
+
+	for _, k := range user.chanlist {
+		targets = append(targets, k.GetUserList()...)
+		delete(k.userlist, user.id)
+		delete(user.chanlist, k.name)
+		delete(k.usermodes, user)
+		k.ShouldIDie()
+	}
+
+	SendToMany(fmt.Sprintf(":%s QUIT :%s", user.GetHostMask(), reason), targets)
+	user.SendLinef("ERROR :Closing Link: %s (%s)", user.host, reason)
+	user.dead = true
+
+	if user.connection != nil {
+		user.connection.Close()
+	}
+
+	delete(userlist, user.id)
+}
+
 func (user *User) PingChecker() {
 	for {
 		if user.dead {
