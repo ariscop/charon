@@ -303,7 +303,7 @@ func ModeHandler(user *User, line *message.Message) {
 	if ChanUserNone(line.Args[0]) == 1 {
 		channel := GetChannelByName(line.Args[0])
 
-		if len(line.Args) < 3 {
+		if len(line.Args) < 2 {
 			//just digging around...
 			channel.FireModes(user)
 		} else {
