@@ -7,7 +7,7 @@ Requirements
 ------------
 
 * Go
-* gb for building
+* gb for building (http://getgb.io/)
 
 Building
 --------
